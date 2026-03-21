@@ -1,0 +1,25 @@
+# Default ignored files
+/shelf/
+/workspace.xml
+# Environment-dependent path to Maven home directory
+/mavenHomeManager.xml
+
+# IntelliJ IDEA settings
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Compiled Java files
+target/
+*.class
+
+# Angular dependencies and builds
+node_modules/
+dist/
+.angular/
+
+# Docker / OS specifics
+.DS_Store
+Thumbs.db
