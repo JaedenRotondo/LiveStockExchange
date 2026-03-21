@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.crypto.screener</groupId>
-	<artifactId>backend</artifactId>
+	<artifactId>screeningApplication</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name/>
 	<description/>

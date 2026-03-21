@@ -1,10 +1,10 @@
-package com.crypto.screener.backend;
+package com.crypto.screener.screeningApplication;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class BackendApplicationTests {
+class ScreeningApplicationTests {
 
 	@Test
 	void contextLoads() {
