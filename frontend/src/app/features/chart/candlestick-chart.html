@@ -1,0 +1,35 @@
+<div #chartWrapper class="relative h-full w-full">
+  <div #chartContainer class="h-full w-full"></div>
+
+  <!-- Timeframe Selector -->
+  <div class="absolute top-2 left-2 z-10 flex items-center gap-1">
+    @for (tf of timeframes; track tf.value) {
+      <button
+        (click)="onTimeframeSelect(tf)"
+        class="px-2.5 py-1 text-xs rounded transition-colors"
+        [class.bg-[#388bfd]]="tf.value === selectedTimeframe().value"
+        [class.text-white]="tf.value === selectedTimeframe().value"
+        [class.bg-[#1c2128]]="tf.value !== selectedTimeframe().value"
+        [class.text-[#8b949e]]="tf.value !== selectedTimeframe().value"
+        [class.hover:text-[#e6edf3]]="tf.value !== selectedTimeframe().value"
+      >
+        {{ tf.label }}
+      </button>
+    }
+  </div>
+
+  <!-- Tooltip -->
+  <div
+    #tooltip
+    class="absolute hidden pointer-events-none z-50 rounded-lg border border-[#30363d] bg-[#161b22] px-3 py-2 text-xs shadow-lg"
+  >
+    <div class="text-[#8b949e] mb-1">{{ tooltipTime }}</div>
+    <div class="flex flex-col gap-0.5">
+      <span><span class="text-[#8b949e]">O: </span><span [style.color]="tooltipColor">{{ tooltipData?.open }}</span></span>
+      <span><span class="text-[#8b949e]">H: </span><span [style.color]="tooltipColor">{{ tooltipData?.high }}</span></span>
+      <span><span class="text-[#8b949e]">L: </span><span [style.color]="tooltipColor">{{ tooltipData?.low }}</span></span>
+      <span><span class="text-[#8b949e]">C: </span><span [style.color]="tooltipColor">{{ tooltipData?.close }}</span></span>
+      <span><span class="text-[#8b949e]">V: </span><span class="text-[#e6edf3]">{{ tooltipData?.volume }}</span></span>
+    </div>
+  </div>
+</div>

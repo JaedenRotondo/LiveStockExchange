@@ -1,0 +1,49 @@
+<aside class="flex flex-col h-full bg-[#161b22]">
+  <!-- Search -->
+  <div class="p-3 border-b border-[#30363d]">
+    <div class="relative">
+      <svg
+        class="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8b949e]"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+        />
+      </svg>
+      <input
+        type="text"
+        placeholder="Search symbols..."
+        [value]="searchQuery()"
+        (input)="onSearch($event)"
+        class="w-full bg-[#0d1117] border border-[#30363d] rounded-md py-1.5 pl-9 pr-3 text-sm text-[#e6edf3] placeholder-[#8b949e] focus:outline-none focus:border-[#388bfd]"
+      />
+    </div>
+  </div>
+
+  <!-- Symbol List -->
+  <div class="flex-1 overflow-y-auto">
+    @for (symbol of filteredSymbols(); track symbol.id) {
+      <button
+        (click)="onSymbolSelect(symbol)"
+        class="w-full flex items-center justify-between px-3 py-2.5 text-left transition-colors hover:bg-[#1c2128] border-l-2"
+        [class.border-[#388bfd]]="symbol.id === selectedSymbolId()"
+        [class.bg-[#1c2128]]="symbol.id === selectedSymbolId()"
+        [class.border-transparent]="symbol.id !== selectedSymbolId()"
+      >
+        <div class="flex flex-col">
+          <span class="text-sm font-medium text-[#e6edf3]">{{ symbol.pair }}</span>
+          <span class="text-xs text-[#8b949e]">{{ symbol.name }}</span>
+        </div>
+      </button>
+    }
+
+    @if (filteredSymbols().length === 0) {
+      <div class="p-4 text-sm text-[#8b949e] text-center">No symbols found</div>
+    }
+  </div>
+</aside>
