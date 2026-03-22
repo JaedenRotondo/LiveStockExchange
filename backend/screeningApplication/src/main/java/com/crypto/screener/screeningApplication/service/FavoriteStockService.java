@@ -20,37 +20,45 @@ public class FavoriteStockService {
         this.repository = repository;
     }
 
-    public List<FavoriteDto.Response> getFavorites(Long userId) {
-        return repository.findByUserId(userId).stream()
+    // ── Get all favourites for a user ────────────────────────────
+    public List<FavoriteDto.Response> getFavorites(String userId) {
+        return repository.findByUserId(userId)
+                .stream()
                 .map(f -> new FavoriteDto.Response(
                         f.getId(), f.getSymbol(), f.getAssetType(), f.getAddedAt()))
                 .collect(Collectors.toList());
     }
 
+    // ── Add a favourite ──────────────────────────────────────────
     @Transactional
-    public FavoriteDto.Response addFavorite(Long userId, FavoriteDto.AddRequest request) {
+    public FavoriteDto.Response addFavorite(String userId, FavoriteDto.AddRequest request) {
         String symbol = request.getSymbol().toUpperCase();
+
         if (repository.existsByUserIdAndSymbol(userId, symbol)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    symbol + " is already in your favourites");
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT, symbol + " is already in your favourites");
         }
+
         FavoriteStock saved = repository.save(
                 new FavoriteStock(userId, symbol, request.getAssetType()));
+
         return new FavoriteDto.Response(
                 saved.getId(), saved.getSymbol(), saved.getAssetType(), saved.getAddedAt());
     }
 
+    // ── Remove a favourite ───────────────────────────────────────
     @Transactional
-    public void removeFavorite(Long userId, String symbol) {
+    public void removeFavorite(String userId, String symbol) {
         String upper = symbol.toUpperCase();
         if (!repository.existsByUserIdAndSymbol(userId, upper)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    upper + " not found in your favourites");
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND, upper + " not found in your favourites");
         }
         repository.deleteByUserIdAndSymbol(userId, upper);
     }
 
-    public boolean isFavorite(Long userId, String symbol) {
+    // ── Check if a symbol is already favourited ──────────────────
+    public boolean isFavorite(String userId, String symbol) {
         return repository.existsByUserIdAndSymbol(userId, symbol.toUpperCase());
     }
 }
