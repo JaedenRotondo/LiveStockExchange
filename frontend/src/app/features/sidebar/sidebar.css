@@ -15,3 +15,30 @@ div::-webkit-scrollbar-thumb {
   background: #30363d;
   border-radius: 2px;
 }
+
+/* Star hidden by default, shows on row hover or when starred */
+.star-btn {
+  opacity: 0;
+  transition: opacity 0.15s, transform 0.1s;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Show star when hovering the ROW (div.symbol-row) */
+.symbol-row:hover .star-btn {
+  opacity: 1;
+}
+
+/* Always show star when it's already starred */
+.star-btn.starred {
+  opacity: 1;
+}
+
+.star-btn:active {
+  transform: scale(1.3);
+}
