@@ -1,0 +1,213 @@
+<div class="flex flex-col h-screen bg-[#0d1117]">
+  <!-- Header -->
+  <div class="h-14 bg-[#161b22] border-b border-[#30363d] shrink-0">
+    <app-header />
+  </div>
+
+  <!-- Content -->
+  <div class="flex-1 overflow-y-auto p-6">
+    <div class="max-w-5xl mx-auto">
+
+      <!-- Title + Add button -->
+      <div class="flex items-center justify-between mb-6">
+        <h1 class="text-xl font-semibold text-[#e6edf3]">My Holdings</h1>
+        <button
+          (click)="showForm.set(!showForm())"
+          class="inline-flex items-center gap-2 rounded-md bg-[#238636] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#2ea043]"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          Add Transaction
+        </button>
+      </div>
+
+      <!-- Add Transaction Form -->
+      @if (showForm()) {
+        <div class="mb-6 p-4 bg-[#161b22] border border-[#30363d] rounded-lg">
+          <div class="grid grid-cols-2 gap-4 md:grid-cols-3">
+            <div>
+              <label class="block text-xs text-[#8b949e] mb-1">Symbol</label>
+              <input
+                type="text"
+                placeholder="BTC"
+                [value]="formSymbol()"
+                (input)="onFormInput('symbol', $event)"
+                class="w-full bg-[#0d1117] border border-[#30363d] rounded-md py-2 px-3 text-sm text-[#e6edf3] placeholder-[#8b949e] focus:outline-none focus:border-[#388bfd]"
+              />
+            </div>
+            <div>
+              <label class="block text-xs text-[#8b949e] mb-1">Type</label>
+              <select
+                [value]="formType()"
+                (change)="onTypeChange($event)"
+                class="w-full bg-[#0d1117] border border-[#30363d] rounded-md py-2 px-3 text-sm text-[#e6edf3] focus:outline-none focus:border-[#388bfd]"
+              >
+                <option value="BUY">BUY</option>
+                <option value="SELL">SELL</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs text-[#8b949e] mb-1">Quantity</label>
+              <input
+                type="number"
+                placeholder="0.00"
+                [value]="formQuantity()"
+                (input)="onFormInput('quantity', $event)"
+                class="w-full bg-[#0d1117] border border-[#30363d] rounded-md py-2 px-3 text-sm text-[#e6edf3] placeholder-[#8b949e] focus:outline-none focus:border-[#388bfd]"
+              />
+            </div>
+            <div>
+              <label class="block text-xs text-[#8b949e] mb-1">Price</label>
+              <input
+                type="number"
+                placeholder="0.00"
+                [value]="formPrice()"
+                (input)="onFormInput('price', $event)"
+                class="w-full bg-[#0d1117] border border-[#30363d] rounded-md py-2 px-3 text-sm text-[#e6edf3] placeholder-[#8b949e] focus:outline-none focus:border-[#388bfd]"
+              />
+            </div>
+            <div>
+              <label class="block text-xs text-[#8b949e] mb-1">Date</label>
+              <input
+                type="date"
+                [value]="formDate()"
+                (input)="onFormInput('date', $event)"
+                class="w-full bg-[#0d1117] border border-[#30363d] rounded-md py-2 px-3 text-sm text-[#e6edf3] focus:outline-none focus:border-[#388bfd]"
+              />
+            </div>
+            <div>
+              <label class="block text-xs text-[#8b949e] mb-1">Note (optional)</label>
+              <input
+                type="text"
+                placeholder="Optional note"
+                [value]="formNote()"
+                (input)="onFormInput('note', $event)"
+                class="w-full bg-[#0d1117] border border-[#30363d] rounded-md py-2 px-3 text-sm text-[#e6edf3] placeholder-[#8b949e] focus:outline-none focus:border-[#388bfd]"
+              />
+            </div>
+          </div>
+          <div class="flex justify-end gap-3 mt-4">
+            <button
+              (click)="onCancel()"
+              class="rounded-md bg-[#0d1117] border border-[#30363d] px-4 py-2 text-sm text-[#e6edf3] transition-colors hover:bg-[#1c2128]"
+            >Cancel</button>
+            <button
+              (click)="onSubmit()"
+              [disabled]="submitting()"
+              class="rounded-md bg-[#238636] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#2ea043] disabled:opacity-50"
+            >Submit</button>
+          </div>
+        </div>
+      }
+
+      <!-- Loading -->
+      @if (loading()) {
+        <div class="flex items-center justify-center py-16">
+          <span class="text-sm text-[#8b949e]">Loading holdings...</span>
+        </div>
+      }
+
+      <!-- Holdings Table -->
+      @if (!loading() && holdingRows().length > 0) {
+        <div class="bg-[#161b22] border border-[#30363d] rounded-lg overflow-hidden">
+          <table class="w-full">
+            <thead>
+              <tr class="border-b border-[#30363d] text-xs text-[#8b949e] uppercase tracking-wider">
+                <th class="text-left px-4 py-3">Symbol</th>
+                <th class="text-right px-4 py-3">Qty</th>
+                <th class="text-right px-4 py-3">Avg Cost</th>
+                <th class="text-right px-4 py-3">Price</th>
+                <th class="text-right px-4 py-3">Value</th>
+                <th class="text-right px-4 py-3">P&L ($)</th>
+                <th class="text-right px-4 py-3">P&L (%)</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of holdingRows(); track row.holding.id) {
+                <tr
+                  class="border-b border-[#30363d] last:border-b-0 cursor-pointer transition-colors hover:bg-[#1c2128]"
+                  (click)="onRowClick(row.holding)"
+                >
+                  <td class="px-4 py-3">
+                    <span class="text-sm font-medium text-[#e6edf3]">{{ row.holding.symbol }}/USDT</span>
+                  </td>
+                  <td class="px-4 py-3 text-right text-sm text-[#e6edf3]">
+                    {{ row.holding.totalQty | number: '1.2-8' }}
+                  </td>
+                  <td class="px-4 py-3 text-right text-sm text-[#e6edf3]">
+                    {{ row.holding.avgPrice | number: '1.2-2' }}
+                  </td>
+                  <td class="px-4 py-3 text-right text-sm text-[#e6edf3]">
+                    @if (row.currentPrice > 0) {
+                      {{ row.currentPrice | number: '1.2-8' }}
+                    } @else {
+                      <span class="text-[#8b949e]">--</span>
+                    }
+                  </td>
+                  <td class="px-4 py-3 text-right text-sm text-[#e6edf3]">
+                    @if (row.currentPrice > 0) {
+                      {{ row.marketValue | number: '1.2-2' }}
+                    } @else {
+                      <span class="text-[#8b949e]">--</span>
+                    }
+                  </td>
+                  <td class="px-4 py-3 text-right text-sm font-medium"
+                    [class.text-[#26a69a]]="row.pnl >= 0"
+                    [class.text-[#ef5350]]="row.pnl < 0"
+                  >
+                    @if (row.currentPrice > 0) {
+                      {{ row.pnl >= 0 ? '+' : '' }}{{ row.pnl | number: '1.2-2' }}
+                    } @else {
+                      <span class="text-[#8b949e]">--</span>
+                    }
+                  </td>
+                  <td class="px-4 py-3 text-right text-sm font-medium"
+                    [class.text-[#26a69a]]="row.pnl >= 0"
+                    [class.text-[#ef5350]]="row.pnl < 0"
+                  >
+                    @if (row.currentPrice > 0) {
+                      {{ row.pnl >= 0 ? '+' : '' }}{{ row.pnlPercent | number: '1.2-2' }}%
+                    } @else {
+                      <span class="text-[#8b949e]">--</span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+
+          <!-- Portfolio totals -->
+          @if (portfolioTotal().totalCost > 0) {
+            <div class="flex items-center justify-between px-4 py-3 bg-[#0d1117] border-t border-[#30363d]">
+              <span class="text-sm font-medium text-[#8b949e]">Portfolio Total</span>
+              <div class="flex items-center gap-4">
+                <span class="text-sm text-[#e6edf3]">{{ portfolioTotal().totalValue | number: '1.2-2' }}</span>
+                <span class="text-sm font-medium"
+                  [class.text-[#26a69a]]="portfolioTotal().pnl >= 0"
+                  [class.text-[#ef5350]]="portfolioTotal().pnl < 0"
+                >
+                  {{ portfolioTotal().pnl >= 0 ? '+' : '' }}{{ portfolioTotal().pnl | number: '1.2-2' }}
+                  ({{ portfolioTotal().pnl >= 0 ? '+' : '' }}{{ portfolioTotal().pnlPercent | number: '1.2-2' }}%)
+                </span>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Empty state -->
+      @if (!loading() && holdingRows().length === 0) {
+        <div class="flex flex-col items-center justify-center py-16 text-[#8b949e]">
+          <svg class="w-12 h-12 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+              d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+          </svg>
+          <p class="text-sm">No holdings yet</p>
+          <p class="text-xs mt-1">Add your first transaction to get started</p>
+        </div>
+      }
+
+    </div>
+  </div>
+</div>
