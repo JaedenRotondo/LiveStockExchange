@@ -15,3 +15,17 @@ CREATE TABLE IF NOT EXISTS favorites (
     UNIQUE KEY uq_user_symbol (user_id, symbol),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS holdings (
+    id          BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id     CHAR(36) NOT NULL,
+    symbol      VARCHAR(20) NOT NULL,
+    total_qty   DECIMAL(18,8) NOT NULL DEFAULT 0,
+    avg_price   DECIMAL(18,8) NOT NULL DEFAULT 0,
+    asset_type  ENUM('CRYPTO','STOCK') NOT NULL DEFAULT 'CRYPTO',
+    notes       VARCHAR(500),
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_holding_user_symbol (user_id, symbol),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);

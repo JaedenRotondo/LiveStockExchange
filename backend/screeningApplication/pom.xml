@@ -16,7 +16,7 @@
 
 	<properties>
 		<java.version>17</java.version>
-		<start-class>com.crypto.screener.screeningApplication.screeningApplication</start-class>
+		<start-class>com.crypto.screener.screeningApplication.ScreeningApplication</start-class>
 	</properties>
 
 	<dependencies>
