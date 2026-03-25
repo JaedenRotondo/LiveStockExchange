@@ -40,7 +40,7 @@ run docker then
 docker compose up -d
 ```
 
-This spins up MySQL 8 on port `3307` and runs `init.sql` to create the `users` and `favorites` tables.
+This spins up MySQL 8 on port `3307` and runs `init.sql` tables.
 
 | Setting | Value |
 |---|---|
@@ -48,6 +48,32 @@ This spins up MySQL 8 on port `3307` and runs `init.sql` to create the `users` a
 | Database | `screener_db` |
 | User | `screener_user` |
 | Password | `screener_pass` |
+
+Inspect the database
+Connect via the MySQL CLI inside the running container:
+```
+docker exec -it screener_db mysql -u screener_user -pscreener_pass screener_db
+```
+
+Useful queries once inside:
+-- List all tables
+SHOW TABLES;
+
+-- Check holdings schema
+DESCRIBE holdings;
+
+-- Check transactions schema
+DESCRIBE transactions;
+
+-- View all holdings
+SELECT * FROM holdings;
+
+-- View all transactions
+SELECT * FROM transactions;
+
+-- Exit
+EXIT;
+```
 
 ### 2 — Start the backend
 
@@ -101,17 +127,15 @@ The app connects to Binance entirely over WebSocket — no REST polling.
 ## Database schema
 
 ```sql
--- Users
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id            CHAR(36) PRIMARY KEY DEFAULT (UUID()),
     email         VARCHAR(255) UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
     full_name     VARCHAR(100),
     created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
- 
--- Favorites (one row per user–symbol pair)
-CREATE TABLE favorites (
+
+CREATE TABLE IF NOT EXISTS favorites (
     id          BIGINT PRIMARY KEY AUTO_INCREMENT,
     user_id     CHAR(36) NOT NULL,
     symbol      VARCHAR(20) NOT NULL,
@@ -119,6 +143,32 @@ CREATE TABLE favorites (
     added_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY uq_user_symbol (user_id, symbol),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS holdings (
+    id          BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id     CHAR(36) NOT NULL,
+    symbol      VARCHAR(20) NOT NULL,
+    total_qty   DECIMAL(18,8) NOT NULL DEFAULT 0,
+    avg_price   DECIMAL(18,8) NOT NULL DEFAULT 0,
+    asset_type  ENUM('CRYPTO','STOCK') NOT NULL DEFAULT 'CRYPTO',
+    notes       VARCHAR(500),
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_holding_user_symbol (user_id, symbol),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE transactions (
+    id          BIGINT AUTO_INCREMENT PRIMARY KEY,
+    holding_id  BIGINT NOT NULL,
+    type        ENUM('BUY','SELL') NOT NULL,
+    quantity    DECIMAL(18,8) NOT NULL,
+    price       DECIMAL(18,8) NOT NULL,
+    note        VARCHAR(500),
+    date        DATE NOT NULL,
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (holding_id) REFERENCES holdings(id) ON DELETE CASCADE
 );
 ```
  

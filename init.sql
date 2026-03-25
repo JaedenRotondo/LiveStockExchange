@@ -29,3 +29,15 @@ CREATE TABLE IF NOT EXISTS holdings (
     UNIQUE KEY uq_holding_user_symbol (user_id, symbol),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS transactions (
+    id          BIGINT AUTO_INCREMENT PRIMARY KEY,
+    holding_id  BIGINT NOT NULL,
+    type        ENUM('BUY','SELL') NOT NULL,
+    quantity    DECIMAL(18,8) NOT NULL,
+    price       DECIMAL(18,8) NOT NULL,
+    note        VARCHAR(500),
+    date        DATE NOT NULL,
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (holding_id) REFERENCES holdings(id) ON DELETE CASCADE
+);

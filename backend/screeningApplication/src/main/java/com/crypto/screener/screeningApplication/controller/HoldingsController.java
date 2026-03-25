@@ -1,7 +1,9 @@
 package com.crypto.screener.screeningApplication.controller;
 
 import com.crypto.screener.screeningApplication.dto.HoldingsDto;
+import com.crypto.screener.screeningApplication.dto.TransactionDto;
 import com.crypto.screener.screeningApplication.service.HoldingsService;
+import com.crypto.screener.screeningApplication.service.TransactionService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,16 +17,21 @@ import java.util.Map;
 @RequestMapping("/api/holdings")
 public class HoldingsController {
 
-    private final HoldingsService service;
+    private final HoldingsService holdingsService;
+    private final TransactionService transactionService;
 
-    public HoldingsController(HoldingsService service) {
-        this.service = service;
+    public HoldingsController(HoldingsService holdingsService,
+                              TransactionService transactionService) {
+        this.holdingsService    = holdingsService;
+        this.transactionService = transactionService;
     }
+
+    // ── Holdings ──────────────────────────────────────────────────
 
     // GET /api/holdings
     @GetMapping
     public ResponseEntity<List<HoldingsDto.Response>> getAll(Authentication auth) {
-        return ResponseEntity.ok(service.getHoldings(userId(auth)));
+        return ResponseEntity.ok(holdingsService.getHoldings(userId(auth)));
     }
 
     // GET /api/holdings/BTCUSDT
@@ -32,7 +39,7 @@ public class HoldingsController {
     public ResponseEntity<HoldingsDto.Response> getOne(
             Authentication auth,
             @PathVariable String symbol) {
-        return ResponseEntity.ok(service.getHolding(userId(auth), symbol));
+        return ResponseEntity.ok(holdingsService.getHolding(userId(auth), symbol));
     }
 
     // POST /api/holdings
@@ -42,7 +49,7 @@ public class HoldingsController {
             @Valid @RequestBody HoldingsDto.AddRequest request) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(service.addHolding(userId(auth), request));
+                .body(holdingsService.addHolding(userId(auth), request));
     }
 
     // DELETE /api/holdings/BTCUSDT
@@ -50,13 +57,41 @@ public class HoldingsController {
     public ResponseEntity<Map<String, String>> remove(
             Authentication auth,
             @PathVariable String symbol) {
-        service.removeHolding(userId(auth), symbol);
+        holdingsService.removeHolding(userId(auth), symbol);
         return ResponseEntity.ok(Map.of("message", symbol.toUpperCase() + " removed"));
     }
 
-    // TODO: POST /api/holdings/transactions — addTransaction
-    // TODO: DELETE /api/holdings/transactions/{id} — deleteTransaction
-    // TODO: GET /api/holdings/{holdingId}/transactions — getTransactions
+    // ── Transactions ──────────────────────────────────────────────
+
+    // POST /api/holdings/transactions
+    @PostMapping("/transactions")
+    public ResponseEntity<TransactionDto.Response> addTransaction(
+            Authentication auth,
+            @Valid @RequestBody TransactionDto.AddRequest request) {
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(transactionService.addTransaction(userId(auth), request));
+    }
+
+    // DELETE /api/holdings/transactions/{id}
+    @DeleteMapping("/transactions/{id}")
+    public ResponseEntity<Map<String, String>> deleteTransaction(
+            Authentication auth,
+            @PathVariable Long id) {
+        transactionService.deleteTransaction(userId(auth), id);
+        return ResponseEntity.ok(Map.of("message", "Transaction " + id + " deleted"));
+    }
+
+    // GET /api/holdings/{holdingId}/transactions
+    @GetMapping("/{holdingId}/transactions")
+    public ResponseEntity<List<TransactionDto.Response>> getTransactions(
+            Authentication auth,
+            @PathVariable Long holdingId) {
+        return ResponseEntity.ok(
+                transactionService.getTransactions(userId(auth), holdingId));
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────
 
     private String userId(Authentication auth) {
         return (String) auth.getPrincipal();
