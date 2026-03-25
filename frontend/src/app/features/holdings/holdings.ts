@@ -1,8 +1,10 @@
 import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { Router } from '@angular/router';
+import { switchMap } from 'rxjs';
 import { HeaderComponent } from '../header/header';
 import { HoldingService } from '../../core/services/holding.service';
+import { TransactionService } from '../../core/services/transaction.service';
 import { MarketDataStore } from '../../core/services/market-data.store';
 import { Holding, AddTransactionRequest } from '../../core/models/holding.model';
 
@@ -27,6 +29,7 @@ interface HoldingRow {
 })
 export class HoldingsComponent implements OnInit {
   private readonly holdingService = inject(HoldingService);
+  private readonly transactionService = inject(TransactionService);
   private readonly marketData = inject(MarketDataStore);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
@@ -105,7 +108,9 @@ export class HoldingsComponent implements OnInit {
       note: this.formNote() || undefined,
     };
 
-    this.holdingService.addTransaction(request).subscribe({
+    this.transactionService.add(request).pipe(
+      switchMap(() => this.holdingService.load())
+    ).subscribe({
       next: (holdings) => {
         this.resetForm();
         this.connectPriceStream(holdings);
