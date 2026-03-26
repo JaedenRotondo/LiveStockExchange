@@ -26,8 +26,6 @@ public class HoldingsController {
         this.transactionService = transactionService;
     }
 
-    // ── Holdings ──────────────────────────────────────────────────
-
     // GET /api/holdings
     @GetMapping
     public ResponseEntity<List<HoldingsDto.Response>> getAll(Authentication auth) {
@@ -59,36 +57,6 @@ public class HoldingsController {
             @PathVariable String symbol) {
         holdingsService.removeHolding(userId(auth), symbol);
         return ResponseEntity.ok(Map.of("message", symbol.toUpperCase() + " removed"));
-    }
-
-    // ── Transactions ──────────────────────────────────────────────
-
-    // POST /api/holdings/transactions
-    @PostMapping("/transactions")
-    public ResponseEntity<TransactionDto.Response> addTransaction(
-            Authentication auth,
-            @Valid @RequestBody TransactionDto.AddRequest request) {
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(transactionService.addTransaction(userId(auth), request));
-    }
-
-    // DELETE /api/holdings/transactions/{id}
-    @DeleteMapping("/transactions/{id}")
-    public ResponseEntity<Map<String, String>> deleteTransaction(
-            Authentication auth,
-            @PathVariable Long id) {
-        transactionService.deleteTransaction(userId(auth), id);
-        return ResponseEntity.ok(Map.of("message", "Transaction " + id + " deleted"));
-    }
-
-    // GET /api/holdings/{holdingId}/transactions
-    @GetMapping("/{holdingId}/transactions")
-    public ResponseEntity<List<TransactionDto.Response>> getTransactions(
-            Authentication auth,
-            @PathVariable Long holdingId) {
-        return ResponseEntity.ok(
-                transactionService.getTransactions(userId(auth), holdingId));
     }
 
     // ── Helpers ───────────────────────────────────────────────────
