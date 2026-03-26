@@ -5,15 +5,14 @@ import { Transaction, AddTransactionRequest } from '../models/holding.model';
 
 @Injectable({ providedIn: 'root' })
 export class TransactionService {
-  private readonly API = '/api/transactions';
   private readonly http = inject(HttpClient);
 
   add(request: AddTransactionRequest): Observable<Transaction> {
-    return this.http.post<Transaction>(this.API, request);
+    return this.http.post<Transaction>('/api/transactions', request);
   }
 
   delete(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.API}/${id}`);
+    return this.http.delete<void>(`/api/transactions/${id}`);
   }
 
   getByHolding(holdingId: number): Observable<Transaction[]> {

@@ -1,9 +1,7 @@
 package com.crypto.screener.screeningApplication.controller;
 
 import com.crypto.screener.screeningApplication.dto.HoldingsDto;
-import com.crypto.screener.screeningApplication.dto.TransactionDto;
 import com.crypto.screener.screeningApplication.service.HoldingsService;
-import com.crypto.screener.screeningApplication.service.TransactionService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,12 +16,9 @@ import java.util.Map;
 public class HoldingsController {
 
     private final HoldingsService holdingsService;
-    private final TransactionService transactionService;
 
-    public HoldingsController(HoldingsService holdingsService,
-                              TransactionService transactionService) {
-        this.holdingsService    = holdingsService;
-        this.transactionService = transactionService;
+    public HoldingsController(HoldingsService holdingsService) {
+        this.holdingsService = holdingsService;
     }
 
     // GET /api/holdings

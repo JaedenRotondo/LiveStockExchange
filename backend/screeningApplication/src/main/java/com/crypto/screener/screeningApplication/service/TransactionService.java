@@ -77,7 +77,7 @@ public class TransactionService {
         recalculateHolding(holding);
     }
 
-    // ── GET /api/holdings/{holdingId}/transactions ─────────────────
+    // ── GET /api/transactions/{holdingId} ─────────────────
     public List<TransactionDto.Response> getTransactions(String userId, Long holdingId) {
         Holdings holding = holdingsRepository.findById(holdingId)
                 .orElseThrow(() -> new ResponseStatusException(
