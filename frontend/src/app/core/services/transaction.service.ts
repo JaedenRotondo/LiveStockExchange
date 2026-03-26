@@ -5,7 +5,7 @@ import { Transaction, AddTransactionRequest } from '../models/holding.model';
 
 @Injectable({ providedIn: 'root' })
 export class TransactionService {
-  private readonly API = '/api/transactions';
+  private readonly API = '/api/holdings/transactions';
   private readonly http = inject(HttpClient);
 
   add(request: AddTransactionRequest): Observable<Transaction> {
