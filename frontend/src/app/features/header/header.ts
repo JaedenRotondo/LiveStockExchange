@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { MarketDataStore } from '../../core/services/market-data.store';
 import { AuthService } from '../../core/services/auth.service';
 import { TIMEFRAMES } from '../../core/constants/chart.constants';
@@ -9,7 +9,7 @@ import { Timeframe } from '../../core/models/timeframe.model';
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [DecimalPipe],
+  imports: [DecimalPipe, RouterLink],
   templateUrl: './header.html',
   styleUrl: './header.css',
 })
@@ -40,5 +40,9 @@ export class HeaderComponent {
 
   goToLogin(): void {
     this.router.navigate(['/login']);
+  }
+
+  goToHoldings(): void {
+    this.router.navigate(['/holdings']);
   }
 }

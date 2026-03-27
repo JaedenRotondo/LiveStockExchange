@@ -2,9 +2,9 @@ import { DestroyRef, Injectable, inject } from '@angular/core';
 import { Observable, Subject, of } from 'rxjs';
 import { OhlcvData } from '../models/candlestick.model';
 import { SymbolInfo } from '../models/symbol.model';
-const BINANCE_WS_API_URL = 'wss://ws-api.binance.com/ws-api/v3';
+const BINANCE_REST_API_URL = 'https://api.binance.com/api/v3';
 const BINANCE_WS_STREAM_URL = 'wss://stream.binance.com:9443/ws';
-const DEFAULT_CANDLE_LIMIT = 200;
+const DEFAULT_CANDLE_LIMIT = 300;
 
 const KLINE_OPEN_TIME = 0;
 const KLINE_OPEN = 1;
@@ -81,26 +81,13 @@ export class BinanceApiClient {
 
   private fetchExchangeInfo(): Observable<SymbolInfo[]> {
     return new Observable<SymbolInfo[]>((observer) => {
-      const apiWs = new WebSocket(BINANCE_WS_API_URL);
-
-      apiWs.onopen = () => {
-        apiWs.send(
-          JSON.stringify({
-            id: crypto.randomUUID(),
-            method: 'exchangeInfo',
-            params: {},
-          }),
-        );
-      };
-
-      apiWs.onmessage = (event: MessageEvent) => {
-        const response = JSON.parse(event.data as string) as {
-          id: string;
-          status: number;
-          result: BinanceExchangeInfo;
-        };
-        if (response.status === 200) {
-          const symbols = response.result.symbols
+      fetch(`${BINANCE_REST_API_URL}/exchangeInfo`)
+        .then((res) => {
+          if (!res.ok) throw new Error(`Binance API error: ${res.status}`);
+          return res.json() as Promise<BinanceExchangeInfo>;
+        })
+        .then((data) => {
+          const symbols = data.symbols
             .filter((s) => s.status === 'TRADING' && s.quoteAsset === 'USDT')
             .map((s) => ({
               id: s.symbol.toLowerCase(),
@@ -113,19 +100,8 @@ export class BinanceApiClient {
           );
           observer.next(symbols);
           observer.complete();
-        } else {
-          observer.error(new Error(`Binance WS API error: ${response.status}`));
-        }
-
-        apiWs.close();
-      };
-
-      apiWs.onerror = () => {
-        observer.error(new Error('Binance WS API connection failed'));
-        apiWs.close();
-      };
-
-      return () => apiWs.close();
+        })
+        .catch((err) => observer.error(err));
     });
   }
 
@@ -135,32 +111,21 @@ export class BinanceApiClient {
     limit: number = DEFAULT_CANDLE_LIMIT,
   ): Observable<OhlcvData[]> {
     const binanceInterval = TIMEFRAME_MAP[interval] ?? interval;
+    const params = new URLSearchParams({
+      symbol: symbol.toUpperCase(),
+      interval: binanceInterval,
+      limit: String(limit),
+    });
 
     return new Observable<OhlcvData[]>((observer) => {
-      const id = crypto.randomUUID();
-      const apiWs = new WebSocket(BINANCE_WS_API_URL);
-
-      apiWs.onopen = () => {
-        apiWs.send(
-          JSON.stringify({
-            id,
-            method: 'klines',
-            params: { symbol: symbol.toUpperCase(), interval: binanceInterval, limit },
-          }),
-        );
-      };
-
-      apiWs.onmessage = (event: MessageEvent) => {
-        const response = JSON.parse(event.data as string) as {
-          id: string;
-          status: number;
-          result: KlineArray[];
-        };
-        if (response.id !== id) return;
-
-        if (response.status === 200) {
+      fetch(`${BINANCE_REST_API_URL}/klines?${params}`)
+        .then((res) => {
+          if (!res.ok) throw new Error(`Binance API error: ${res.status}`);
+          return res.json() as Promise<KlineArray[]>;
+        })
+        .then((klines) => {
           observer.next(
-            response.result.map((k) => ({
+            klines.map((k) => ({
               time: Math.floor(k[KLINE_OPEN_TIME] / MS_TO_SECONDS),
               open: parseFloat(k[KLINE_OPEN] as string),
               high: parseFloat(k[KLINE_HIGH] as string),
@@ -170,19 +135,8 @@ export class BinanceApiClient {
             })),
           );
           observer.complete();
-        } else {
-          observer.error(new Error(`Binance WS API error: ${response.status}`));
-        }
-
-        apiWs.close();
-      };
-
-      apiWs.onerror = () => {
-        observer.error(new Error('Binance WS API connection failed'));
-        apiWs.close();
-      };
-
-      return () => apiWs.close();
+        })
+        .catch((err) => observer.error(err));
     });
   }
 
